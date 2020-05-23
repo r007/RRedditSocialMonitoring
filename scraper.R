@@ -38,7 +38,7 @@ results <- list()
 
 # Callback in case of success
 success <- function(x) {
-   results <<- append(results, list(x))
+   results <<- append(results, list(rawToChar(x$content)))
 }
 
 # Callback in case of failure
