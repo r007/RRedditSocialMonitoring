@@ -1,6 +1,7 @@
 library(magrittr)
 library(BBmisc)
 library(curl)
+library(dplyr)
 library(jsonlite)
 
 # Get latest ID in decimal format
@@ -40,7 +41,7 @@ results <- list()
 success <- function(x) {
    json <- fromJSON(rawToChar(x$content))
    results <<- append(results, list(json))
-   print(paste("Response:", x$status_code, "Time:", x$times[6]))
+   print(paste("Response:", x$status_code, "Time:", x$times[6], "Post count:", count(json[['data']][['children']])))
 }
 
 # Callback in case of failure
