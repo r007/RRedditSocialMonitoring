@@ -28,5 +28,9 @@ generate_ids <- function(latest_id, batches = 20, posts = 100) {
    ids
 }
 
+generate_urls <- function(ids) {
+   paste("https://api.reddit.com/api/info.json?id=", apply(ids, 1, paste, collapse = ","), sep = "")
+}
+
 id <- get_latest_reddit_post_id()
-print(generate_ids(id))
+print(generate_urls(generate_ids(id)))
