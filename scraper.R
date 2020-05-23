@@ -38,7 +38,9 @@ results <- list()
 
 # Callback in case of success
 success <- function(x) {
-   results <<- append(results, list(rawToChar(x$content)))
+   json <- fromJSON(rawToChar(x$content))
+   results <<- append(results, list(json))
+   print(paste("Response:", x$status_code, "Time:", x$times[6]))
 }
 
 # Callback in case of failure
@@ -59,3 +61,4 @@ get_latest_reddit_post_id() %>%
    generate_ids() %>%
    generate_urls() %>%
    exec_reddit_query()
+
