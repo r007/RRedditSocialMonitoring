@@ -1,3 +1,4 @@
+library(magrittr)
 library(BBmisc)
 library(curl)
 library(jsonlite)
@@ -28,9 +29,33 @@ generate_ids <- function(latest_id, batches = 20, posts = 100) {
    ids
 }
 
+# Generate the list for curl query
 generate_urls <- function(ids) {
    paste("https://api.reddit.com/api/info.json?id=", apply(ids, 1, paste, collapse = ","), sep = "")
 }
 
-id <- get_latest_reddit_post_id()
-print(generate_urls(generate_ids(id)))
+results <- list()
+
+# Callback in case of success
+success <- function(x) {
+   results <<- append(results, list(x))
+}
+
+# Callback in case of failure
+failure <- function(x) {
+   cat(paste("Failed request:", str), file = stderr())
+}
+
+# Execute the query, run and save the results
+exec_reddit_query <- function(urls) {
+   for (url in urls) {
+      reddit_handle <- new_handle(url = url)
+      multi_add(reddit_handle, done = success, fail = failure)
+   }
+   multi_run()
+}
+
+get_latest_reddit_post_id() %>%
+   generate_ids() %>%
+   generate_urls() %>%
+   exec_reddit_query()
