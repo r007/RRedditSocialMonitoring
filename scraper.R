@@ -16,7 +16,7 @@ decimalIdToBase36 <- function(elem) {
 
 # Generate the list of post IDs to query
 generate_ids <- function(latest_id, batches = 20, posts = 100) {
-   cat(paste("Starting id:", latest_id))
+   cat(paste("Starting id:", latest_id, "\n"))
 
    # 2000 posts, spread out over 20 batches of 100 posts/each
    ids <- matrix(
