@@ -36,7 +36,7 @@ generate_urls <- function(ids) {
    paste("https://api.reddit.com/api/info.json?id=", apply(ids, 1, paste, collapse = ","), sep = "")
 }
 
-search <- c('can', 'have', 'had', 'with', 'without')
+search <- c('can', 'have', 'had', 'with', 'without', 'probably', 'makes sense', 'think', 'wonderful', 'impressive', 'callback', 'dropshipping', 'marketing', 'china', 'ecommerce', 'coronavirus', 'can I', 'should I', 'introducing', 'shopify', 'blogging', 'affiliate', 'default value', 'the command line', 'optimizing graphics', 'how it works', 'for creating', 'for writing', 'which respects', 'should give a', 'can be used to', 'can be set to', 'not mentioned here', 'is an important', 'breaking news', 'lockdown', 'virus', 'trump', 'voting', 'promotes', 'racist', 'keep up the good', 'memorial day', 'hong kong', 'is just the start', 'our best', 'inequality', 'smarter', 'protect kids', 'reduce risk', 'more than just')
 results <- data.frame(matrix(ncol = length(search), nrow = 0))
 colnames(results) <- search
 results_row <- 1
