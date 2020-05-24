@@ -53,9 +53,9 @@ success <- function(x) {
 	 text <- post[row, "selftext"]
 
          # Search for match in title
-         matched_title <- sapply(search, function(x) stri_detect_fixed(title, x), simplify = TRUE)
+         matched_title <- sapply(search, function(x) stri_detect_fixed(title, x, case_insensitive = TRUE), simplify = TRUE)
          # Search for match in text
-         matched_text <- sapply(search, function(x) stri_detect_fixed(text, x), simplify = TRUE)
+         matched_text <- sapply(search, function(x) stri_detect_fixed(text, x, case_insensitive = TRUE), simplify = TRUE)
 	 
          # See if we have any matches
 	 combined_results <- matched_title | matched_text
