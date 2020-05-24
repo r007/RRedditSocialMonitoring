@@ -36,12 +36,15 @@ generate_urls <- function(ids) {
    paste("https://api.reddit.com/api/info.json?id=", apply(ids, 1, paste, collapse = ","), sep = "")
 }
 
-results <- list()
 search <- c('can', 'have', 'had', 'with', 'without')
+results <- data.frame(matrix(ncol = length(search), nrow = 0))
+colnames(results) <- search
+results_row <- 1
 
 # Callback in case of success
 success <- function(x) {
    children <- fromJSON(rawToChar(x$content))[['data']][['children']]
+
    # Extract the variables we need
    for (post in children['data']) {
       # Loop over data frame rows
@@ -53,14 +56,21 @@ success <- function(x) {
          matched_title <- sapply(search, function(x) stri_detect_fixed(title, x), simplify = TRUE)
          # Search for match in text
          matched_text <- sapply(search, function(x) stri_detect_fixed(text, x), simplify = TRUE)
-	 # If match found, add it to results
-	 if (sum(matched_title) || sum(matched_text)) {
-	   results <<- append(results, list(post[row,]))
+	 
+         # See if we have any matches
+	 combined_results <- matched_title | matched_text
+	 if (sum(combined_results)) {
+	    # Add post ID to results table
+            post_id <- rep(post[row, "id"], length(search))
+	    post_id[!combined_results] <- FALSE
+	    results[results_row,] <- post_id
+	    # Increment the current row counter
+	    results_row <<- results_row + 1
 	 }
       }
    }
 
-   print(paste("Response:", x$status_code, "Time:", x$times[6], "Post count:", count(children), "Total matched results:", length(results)))
+   print(paste("Response:", x$status_code, "Time:", x$times[6], "Post count:", count(children), "Total matched results:", nrow(results)))
 }
 
 # Callback in case of failure
