@@ -3,6 +3,7 @@ library(BBmisc)
 library(curl)
 library(dplyr)
 library(jsonlite)
+library(stringi)
 
 # Get latest ID in decimal format
 get_latest_reddit_post_id <- function() {
@@ -36,12 +37,30 @@ generate_urls <- function(ids) {
 }
 
 results <- list()
+search <- c('can', 'have', 'had', 'with', 'without')
 
 # Callback in case of success
 success <- function(x) {
-   json <- fromJSON(rawToChar(x$content))
-   results <<- append(results, list(json))
-   print(paste("Response:", x$status_code, "Time:", x$times[6], "Post count:", count(json[['data']][['children']])))
+   children <- fromJSON(rawToChar(x$content))[['data']][['children']]
+   # Extract the variables we need
+   for (post in children['data']) {
+      # Loop over data frame rows
+      for (row in 1:nrow(post)) {
+         title <- post[row, "title"]
+	 text <- post[row, "selftext"]
+
+         # Search for match in title
+         matched_title <- sapply(search, function(x) stri_detect_fixed(title, x), simplify = TRUE)
+         # Search for match in text
+         matched_text <- sapply(search, function(x) stri_detect_fixed(text, x), simplify = TRUE)
+	 # If match found, add it to results
+	 if (sum(matched_title) || sum(matched_text)) {
+	   results <<- append(results, list(post[row,]))
+	 }
+      }
+   }
+
+   print(paste("Response:", x$status_code, "Time:", x$times[6], "Post count:", count(children), "Total matched results:", length(results)))
 }
 
 # Callback in case of failure
