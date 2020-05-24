@@ -62,8 +62,8 @@ success <- function(x) {
 	 if (sum(combined_results)) {
 	    # Add post ID to results table
             post_id <- rep(post[row, "id"], length(search))
-	    post_id[!combined_results] <- FALSE
-	    results[results_row,] <- post_id
+	    post_id[!combined_results] <- NA
+	    results[results_row,] <<- post_id
 	    # Increment the current row counter
 	    results_row <<- results_row + 1
 	 }
@@ -92,3 +92,4 @@ get_latest_reddit_post_id() %>%
    generate_urls() %>%
    exec_reddit_query()
 
+colSums(!is.na(results))
