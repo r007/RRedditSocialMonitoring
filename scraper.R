@@ -51,18 +51,16 @@ success <- function(x) {
       for (row in 1:nrow(post)) {
          title <- post[row, "title"]
 	 text <- post[row, "selftext"]
+	 combined <- paste(title, text, sep = ". ")
 
-         # Search for match in title
-         matched_title <- sapply(search, function(x) stri_detect_fixed(title, x, case_insensitive = TRUE), simplify = TRUE)
-         # Search for match in text
-         matched_text <- sapply(search, function(x) stri_detect_fixed(text, x, case_insensitive = TRUE), simplify = TRUE)
+         # Search for match in title and in text
+         matches <- sapply(search, function(x) stri_detect_fixed(combined, x, case_insensitive = TRUE), simplify = TRUE)
 	 
          # See if we have any matches
-	 combined_results <- matched_title | matched_text
-	 if (sum(combined_results)) {
+	 if (sum(matches)) {
 	    # Add post ID to results table
             post_id <- rep(post[row, "id"], length(search))
-	    post_id[!combined_results] <- NA
+	    post_id[!matches] <- NA
 	    results[results_row,] <<- post_id
 	    # Increment the current row counter
 	    results_row <<- results_row + 1
