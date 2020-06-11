@@ -1,9 +1,9 @@
-library(magrittr)
-library(BBmisc)
-library(curl)
-library(dplyr)
-library(jsonlite)
-library(stringi)
+suppressPackageStartupMessages(library(magrittr))
+suppressPackageStartupMessages(library(BBmisc))
+suppressPackageStartupMessages(library(curl))
+suppressPackageStartupMessages(library(dplyr))
+suppressPackageStartupMessages(library(jsonlite))
+suppressPackageStartupMessages(library(stringi))
 
 # Get latest ID in decimal format
 get_latest_reddit_post_id <- function() {
