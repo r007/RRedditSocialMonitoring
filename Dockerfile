@@ -16,3 +16,4 @@ RUN Rscript /install_packages.R
 
 ## copy the script itself
 COPY scraper.R /scraper.R
+CMD ["Rscript", "/scraper.R"]
