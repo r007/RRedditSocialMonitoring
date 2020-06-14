@@ -4,6 +4,7 @@ suppressPackageStartupMessages(library(curl))
 suppressPackageStartupMessages(library(dplyr))
 suppressPackageStartupMessages(library(jsonlite))
 suppressPackageStartupMessages(library(stringi))
+suppressPackageStartupMessages(library(paws.database))
 
 # Get latest ID in decimal format
 get_latest_reddit_post_id <- function() {
@@ -36,9 +37,32 @@ generate_urls <- function(ids) {
    paste("https://api.reddit.com/api/info.json?id=", apply(ids, 1, paste, collapse = ","), sep = "")
 }
 
-search <- c('can', 'have', 'had', 'with', 'without', 'probably', 'makes sense', 'think', 'wonderful', 'impressive', 'callback', 'dropshipping', 'marketing', 'china', 'ecommerce', 'coronavirus', 'can I', 'should I', 'introducing', 'shopify', 'blogging', 'affiliate', 'default value', 'the command line', 'optimizing graphics', 'how it works', 'for creating', 'for writing', 'which respects', 'should give a', 'can be used to', 'can be set to', 'not mentioned here', 'is an important', 'breaking news', 'lockdown', 'virus', 'trump', 'voting', 'promotes', 'racist', 'keep up the good', 'memorial day', 'hong kong', 'is just the start', 'our best', 'inequality', 'smarter', 'protect kids', 'reduce risk', 'more than just', 'same as before')
-results <- data.frame(matrix(ncol = length(search), nrow = 0))
-colnames(results) <- search
+# Configure access to DynamoDB database
+svc <- dynamodb(
+  config = list(
+    credentials = list(
+      creds = list(
+        access_key_id = Sys.getenv("AWS_ACCESS_KEY_ID"),
+        secret_access_key = Sys.getenv("AWS_SECRET_ACCESS_KEY")
+      ),
+      profile = Sys.getenv("AWS_PROFILE")
+    ),
+    endpoint = Sys.getenv("AWS_ENDPOINT"),
+    region = Sys.getenv("AWS_DEFAULT_REGION")
+  )
+)
+
+# Query latest keywords from the database
+scanResult <- svc$scan(
+  ExpressionAttributeNames = list(
+    `#ID` = "id",
+    `#NA` = "name"
+  ),
+  ProjectionExpression = "#ID, #NA",
+  TableName = Sys.getenv("AWS_TABLE_NAME")
+)
+
+results <- data.frame(matrix(ncol = length(scanResult$Items), nrow = 0))
 results_row <- 1
 
 # Callback in case of success
@@ -50,21 +74,21 @@ success <- function(x) {
       # Loop over data frame rows
       for (row in 1:nrow(post)) {
          title <- post[row, "title"]
-	 text <- post[row, "selftext"]
-	 combined <- paste(title, text, sep = ". ")
+	      text <- post[row, "selftext"]
+	      combined <- paste(title, text, sep = ". ")
 
          # Search for match in title and in text
-         matches <- sapply(search, function(x) stri_detect_fixed(combined, x, case_insensitive = TRUE), simplify = TRUE)
+         matches <- sapply(scanResult$Items, function(x) stri_detect_fixed(combined, x$name$S, case_insensitive = TRUE), simplify = TRUE)
 	 
          # See if we have any matches
-	 if (sum(matches)) {
-	    # Add post ID to results table
-            post_id <- rep(post[row, "id"], length(search))
-	    post_id[!matches] <- NA
-	    results[results_row,] <<- post_id
-	    # Increment the current row counter
-	    results_row <<- results_row + 1
-	 }
+	      if (sum(matches)) {
+	         # Add post ID to results table
+            post_id <- rep(post[row, "id"], length(scanResult$Items))
+	         post_id[!matches] <- NA
+	         results[results_row,] <<- post_id
+	         # Increment the current row counter
+	         results_row <<- results_row + 1
+	      }
       }
    }
 
