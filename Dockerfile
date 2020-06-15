@@ -10,11 +10,9 @@ RUN apt-get update -qq && apt-get -y --no-install-recommends install \
 
 ## copy files
 COPY install_packages.R /install_packages.R
-COPY .Renviron /.Renviron
 
 ## install R-packages
 RUN Rscript /install_packages.R
 
 ## copy the script itself
 COPY scraper.R /scraper.R
-CMD ["Rscript", "/scraper.R"]
